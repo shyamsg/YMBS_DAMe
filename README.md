@@ -165,5 +165,17 @@ The first step in getting the OTU table is to get the fasta file into a format t
 Now we are ready to use sumaclust to cluster the sequences. There are 2 important parameters when using sumaclust - and for that matter most clustering methods - what do you think these are?
 Similarity - how much do the sequences resemble each other and abundance - how many copies of these sequences exist. 
 
-How do you pick values for these parameters? Very tricky. We have a tool for sumaclust that helps you choose one. 
+How do you pick values for these parameters? Very tricky. We have a tool for sumaclust that helps you choose values for these parameters.
+```bash
+~/Work/DAMe/bin/assessClusteringParameters.py -i FilteredReads.forsumaclust.fna -mint 0.94 -minR 0.8 -step 0.02 -o LerayCOI.clusterParms.pdf
+``` 
+Take a look at this pdf - what values would you use? OK, now let us run sumaclust with the chosen parameters.
+```bash
+sumaclust -a -t 0.98 -R 0.85 -e  FilteredReads.forsumaclust.fna > LerayCOI.sumaclust.t98.R85.fna
+```
+Examine the fasta file you have now. What information is stored in the file? Our final step is to convert this fasta file (which contains OTU sequences) into an OTU table. We will also normalize the counts of the OTUs using a standard denominator.
+```bash
+~/Work/DAMe/bin/tabulateSumaclust.py -i LerayCOI.sumaclust.t98.R85.fna -blast -s 100000 -o LerayCOI.t98.R85
+```
 
+Finally, we have an OTU table, and Chrisitina will walk you through the process of taxonomic assignment to figure out what taxa OTU sequences represent. 
