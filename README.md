@@ -60,6 +60,7 @@ Spades will create a directory in each of your pool directories, called `correct
 The last step of pre-processing is to merge read 1 and read 2 of the paired end sequences (测通). Remember that this is useful if and only if the barcode you are looking at is shorter than the sum of the 2 reads, which is the case in our dataset. For this step, we will use `PandaSeq`. What do you think are the important parameters for this?
 ```bash
 pandaseq -f pool1/corrected/pool1.trim.R1.fastq.00.0_0.cor.fastq.gz -r pool1/corrected/pool1.trim.R2.fastq.00.0_0.cor.fastq.gz -G pool1/pool1_panda.log.bz2 -F -w pool1/pool1.merged.fastq -o 20
+gzip pool1/pool1.merged.fastq
 ```
 
 ## Sorting and Filtering
@@ -111,4 +112,9 @@ optional arguments:
   -o OutPrefix, --output_prefix OutPrefix
                         Prefix for output files. (Default : '')
 ```
-There are 4 files we need to run sorting. The files we are going to use are available in this repository. The four files are - [primer file](Primers_LerayCOI.txt), [tag file](Tags_LerayCOI.txt), [pool file](Pools_LerayCOI.txt) and [sample file](Samples_LerayCOI.txt).
+There are 4 files we need to run sorting. The files we are going to use are available in this repository. The four files are - [primer file](Primers_LerayCOI.txt), [tag file](Tags_LerayCOI.txt), [pool file](Pools_LerayCOI.txt) and [sample file](Samples_LerayCOI.txt). Take some time to examine the contents of these files.
+Let us now run sorting on the fastq files we generated in the last section. 
+```bash
+python /home/shyam/Work/Begum/src/Begum.py sort -p Primers_LerayCOI.txt -t Tags_LerayCOI.txt -s Samples_LerayCOI.txt -l Pools_LerayCOI.txt -pm 2 -tm 1 -d begum -o LerayCOI &> begum.log &
+```
+Before we move forward and look at the output files, let us look at the log file quickly. Now, let us look at the output files. For each pool we have 2 output files, one where we talk have the sequences, and another where we have the tag combinations found and they type of these tag combinations. Let us examine the sequence file first. Now, let us look at the tag information file. 
