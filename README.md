@@ -64,7 +64,7 @@ gzip pool1/pool1.merged.fastq
 ```
 
 ## Sorting and Filtering
-Now that we have the adapter removed, trimmed, corrected, merged sequences, we are ready to start to undo the lab work! For these steps, we are going to use a tool called [Begum](http://github.com/shyamsg/Begum) (DAMe's Mama). Currently, Begum has 2 submodules - sorting and filtering. We will go through these step by step.
+Now that we have the adapter removed, trimmed, corrected, merged sequences, we are ready to start to undo the lab work! For these steps, we are going to use a tool called [Begum](http://github.com/shyamsg/Begum) (DAMe's Mama). Currently, Begum has 2 submodules - sorting and filtering. We will go through these step by step. Before starting make a output directory called `begum`.
 
 
 ### Sorting
@@ -118,3 +118,52 @@ Let us now run sorting on the fastq files we generated in the last section.
 python /home/shyam/Work/Begum/src/Begum.py sort -p Primers_LerayCOI.txt -t Tags_LerayCOI.txt -s Samples_LerayCOI.txt -l Pools_LerayCOI.txt -pm 2 -tm 1 -d begum -o LerayCOI &> begum.log &
 ```
 Before we move forward and look at the output files, let us look at the log file quickly. Now, let us look at the output files. For each pool we have 2 output files, one where we talk have the sequences, and another where we have the tag combinations found and they type of these tag combinations. Let us examine the sequence file first. Now, let us look at the tag information file. 
+
+### Filtering 
+After we have the information for each pool, we need to filter the reads to make sure that we only retain reads that are true positives, and get rid of as many false positives as possible. What do you think some of the important factors to filter on are?
+
+Let us start with the usual help message of filter. 
+```bash
+usage: Begum filter [-h] -i InputPrefix -s SampleInformationFile [-p propPCRs]
+                    [-m minTimes] [-l minLength] [-d OutDirectory]
+                    [-o OutPrefix]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i InputPrefix, --inputPrefix InputPrefix
+                        Information file with prefix information for the sort
+                        tagInfo files.
+  -s SampleInformationFile, --sampleInfo SampleInformationFile
+                        File with tag combo and pool for each sample (Format:
+                        Sample FwdTagName RevTagName PoolName)
+  -p propPCRs, --propPCRs propPCRs
+                        Minimum proportion of PCR replicates a sequence should
+                        be present in.
+  -m minTimes, --minOccurence minTimes
+                        Minimum number of times a sequence should be present,
+                        in a PCR replicate to be consider a true sequence.
+  -l minLength, --minLength minLength
+                        Minimum length of the amplicon sequence - in case of
+                        single end or merged sequences, it is the length of
+                        the sequence, and in case of paired end reads, it is
+                        the sum of the length of the 2 reads.
+  -d OutDirectory, --output_directory OutDirectory
+                        Output directory
+  -o OutPrefix, --output_prefix OutPrefix
+                        Prefix for output files
+``` 
+Now, run the filtering command with a minimum overlap option, and options to keep reads that occur in at least 2 out of 3 replicates, and occur at least 5 times. 
+```bash
+python /home/shyam/Work/Begum/src/Begum.py filter -s Samples_LerayCOI.txt -m 5 -p 0.7 -l 140 -d begum -i begum/LerayCOI -o LeroyCOI
+```
+What is the output of this command? What information is there in the fasta file?
+
+## Clustering
+Now that we have the fasta file with information on occurrence, abundance and samples, we need to process this to go from a fasta file to an OTU table. This is done using a process called clustering, where "similar" sequences are collapsed into one to get an OTU. For the clustering, we are going to use a tool called sumaclust - this is an arbitrary choice, you can use your favorite clustering tool. 
+The first step in getting the OTU table is to get the fasta file into a format that sumaclust likes. So let us do that `~/Work/DAMe/bin/c^CvertToUSearch.py -i begum/LerayCOI.fna`. This generates an output file called `FilteredReads.forsumaclust.fna`. Compare the two files and see what the differences are. 
+
+Now we are ready to use sumaclust to cluster the sequences. There are 2 important parameters when using sumaclust - and for that matter most clustering methods - what do you think these are?
+Similarity - how much do the sequences resemble each other and abundance - how many copies of these sequences exist. 
+
+How do you pick values for these parameters? Very tricky. We have a tool for sumaclust that helps you choose one. 
+
