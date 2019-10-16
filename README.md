@@ -37,7 +37,7 @@ AdapterRemoval --file1 TOG-course-pool1-R1.fastq.bz2 --file2 TOG-course-pool1-R2
 This takes in the sequencing file for read1 and read2, and the output prefix. Since we want to be nice to our computers and not take up too much space, so let us zip our output files as well. What do the output files look like? Which files would you continue working with, and which would you discard? Of course, you need to do the same for the other 2 pools.
 
 ### Quality trimming
-The next step is to remove low quality bases from the reads. Usually the 3' ends of reads tend to be of lower quality than those at the 5' end. So it is usually a good idea to remove these low quality and 'N' bases from the ends of the reads. We will use sickle for this step. 
+The next step is to remove low quality bases from the reads. Usually the 3' ends of reads tend to be of lower quality than those at the 5' end. So it is usually a good idea to remove these low quality and 'N' bases from the ends of the reads. We will use `sickle` for this step. 
 ```bash
 sickle pe -f pool1/pool1.pair1.truncated.gz -r pool1/pool1.pair2.truncated.gz -t sanger -o pool1/pool1.trim.R1.fastq.gz -p pool1/pool1.trim.R2.fastq.gz -s pool1/pool1.trim.singleton.gz -g 
 ``` 
@@ -57,5 +57,58 @@ spades -1 pool3/pool3.trim.R1.fastq.gz -2 pool1/pool3.trim.R2.fastq.gz --only-er
 Spades will create a directory in each of your pool directories, called `corrected`, which contains the corrected paired end sequencing reads.
 
 ### Merging PE sequences
-The last 
+The last step of pre-processing is to merge read 1 and read 2 of the paired end sequences (测通). Remember that this is useful if and only if the barcode you are looking at is shorter than the sum of the 2 reads, which is the case in our dataset. For this step, we will use `PandaSeq`. What do you think are the important parameters for this?
+```bash
+pandaseq -f pool1/corrected/pool1.trim.R1.fastq.00.0_0.cor.fastq.gz -r pool1/corrected/pool1.trim.R2.fastq.00.0_0.cor.fastq.gz -G pool1/pool1_panda.log.bz2 -F -w pool1/pool1.merged.fastq -o 20
+```
 
+## Sorting and Filtering
+Now that we have the adapter removed, trimmed, corrected, merged sequences, we are ready to start to undo the lab work! For these steps, we are going to use a tool called [Begum](http://github.com/shyamsg/Begum) (DAMe's Mama). Currently, Begum has 2 submodules - sorting and filtering. We will go through these step by step.
+
+
+### Sorting
+First step in that is to demultiplex the seqences into their constituent parts, a combination of samples and PCR replicates. Let us start by looking at sort's help.
+```
+usage: Begum sort [-h] [-p PrimerFile] [-p1 FwdPrimer] [-p2 RevPrimer] -t
+                   TagFile -s SampleInformationFile -l PoolInformationFile
+                   [-m] [-pm PrimerMismatches] [-tm TagMismatches]
+                   [-mo MinOverlap] [-mm OverlapErrRate] [-d OutDirectory]
+                   [-o OutPrefix]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PrimerFile, --primers PrimerFile
+                        File with forward and reverse primer sequence (Format:
+                        ForwardPrimer ReversePrimer)
+  -p1 FwdPrimer, --fwdPrimer FwdPrimer
+                        Sequence of forward primer
+  -p2 RevPrimer, --revPrimer RevPrimer
+                        Sequence of reverse primer
+  -t TagFile, --tags TagFile
+                        File with tag name and sequence (Format: TagName
+                        FwdTagSequence)
+  -s SampleInformationFile, --sampleInfo SampleInformationFile
+                        File with tag combo and pool for each sample (Format:
+                        Sample FwdTagName RevTagName PoolName)
+  -l PoolInformationFile, --pool PoolInformationFile
+                        File with pool information (Format: Poolname
+                        Read1Fastq [Read2Fastq])
+  -m, --allowMultiplePrimers
+                        Allow more one occurrance of the primer sequence in
+                        read. (Default False)
+  -pm PrimerMismatches, --primerMismatches PrimerMismatches
+                        Number of mismatches in primer. (Default 0)
+  -tm TagMismatches, --tagMismatches TagMismatches
+                        Number of allowed mismatches in tags. (Default 0)
+  -mo MinOverlap, --merge_overlap MinOverlap
+                        Merge read1 and read2 if overlapping by given number
+                        of bases or more (>=5) __NOT IMPLEMENTED YET__
+  -mm OverlapErrRate, --merge_errors OverlapErrRate
+                        Rate of mismatches allowed in overlap between reads:
+                        range [0,0.2] __NOT IMPLEMENTED YET__
+  -d OutDirectory, --output_directory OutDirectory
+                        Output directory. (Default: .)
+  -o OutPrefix, --output_prefix OutPrefix
+                        Prefix for output files. (Default : '')
+```
+There are 4 files we need to run sorting. The files we are going to use are available in this repository. The four files are - [primer file](Primers_LerayCOI.txt), [tag file](Tags_LerayCOI.txt), [pool file](Pools_LerayCOI.txt) and [sample file](Samples_LerayCOI.txt).
