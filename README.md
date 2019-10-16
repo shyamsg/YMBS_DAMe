@@ -34,6 +34,28 @@ Remember what the sequenced fragment looked like? Before we jump headfirst into 
 ```bash
 AdapterRemoval --file1 TOG-course-pool1-R1.fastq.bz2 --file2 TOG-course-pool1-R2.fastq.bz2 --basename pool1/pool1 --gzip
 ```
-This takes in the sequencing file for read1 and read2, and the output prefix. Since we want to be nice to our computers and not take up too much space, so let us zip our output files as well. What do the output files look like? Which files would you continue working with?
+This takes in the sequencing file for read1 and read2, and the output prefix. Since we want to be nice to our computers and not take up too much space, so let us zip our output files as well. What do the output files look like? Which files would you continue working with, and which would you discard? Of course, you need to do the same for the other 2 pools.
 
-### 
+### Quality trimming
+The next step is to remove low quality bases from the reads. Usually the 3' ends of reads tend to be of lower quality than those at the 5' end. So it is usually a good idea to remove these low quality and 'N' bases from the ends of the reads. We will use sickle for this step. 
+```bash
+sickle pe -f pool1/pool1.pair1.truncated.gz -r pool1/pool1.pair2.truncated.gz -t sanger -o pool1/pool1.trim.R1.fastq.gz -p pool1/pool1.trim.R2.fastq.gz -s pool1/pool1.trim.singleton.gz -g 
+``` 
+You need to also do this for the other 2 pools. Similar to the Adapter removal output, we will not continue with the singleton file, but focus only on the paired end output. 
+
+### Error correction
+The sequencing errors can be corrected using k-mer based approaches. SPAdes, a software usually used for assembly, can do some error correction based on k-mer distribution in the data. 
+```bash
+spades -1 pool1/pool1.trim.R1.fastq.gz -2 pool1/pool1.trim.R2.fastq.gz --only-error-correction -o pool1
+```
+This will take some time to run, so it might be a good idea to run all three pools at once. So let us fork all of them at once. 
+```bash
+spades -1 pool1/pool1.trim.R1.fastq.gz -2 pool1/pool1.trim.R2.fastq.gz --only-error-correction -o pool1 &
+spades -1 pool2/pool2.trim.R1.fastq.gz -2 pool1/pool2.trim.R2.fastq.gz --only-error-correction -o pool2 &
+spades -1 pool3/pool3.trim.R1.fastq.gz -2 pool1/pool3.trim.R2.fastq.gz --only-error-correction -o pool3 &
+```
+Spades will create a directory in each of your pool directories, called `corrected`, which contains the corrected paired end sequencing reads.
+
+### Merging PE sequences
+The last 
+
