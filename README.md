@@ -51,8 +51,8 @@ spades -1 pool1/pool1.trim.R1.fastq.gz -2 pool1/pool1.trim.R2.fastq.gz --only-er
 This will take some time to run, so it might be a good idea to run all three pools at once. So let us fork all of them at once. 
 ```bash
 spades -1 pool1/pool1.trim.R1.fastq.gz -2 pool1/pool1.trim.R2.fastq.gz --only-error-correction -o pool1 &
-spades -1 pool2/pool2.trim.R1.fastq.gz -2 pool1/pool2.trim.R2.fastq.gz --only-error-correction -o pool2 &
-spades -1 pool3/pool3.trim.R1.fastq.gz -2 pool1/pool3.trim.R2.fastq.gz --only-error-correction -o pool3 &
+spades -1 pool2/pool2.trim.R1.fastq.gz -2 pool2/pool2.trim.R2.fastq.gz --only-error-correction -o pool2 &
+spades -1 pool3/pool3.trim.R1.fastq.gz -2 pool3/pool3.trim.R2.fastq.gz --only-error-correction -o pool3 &
 ```
 Spades will create a directory in each of your pool directories, called `corrected`, which contains the corrected paired end sequencing reads.
 
