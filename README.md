@@ -160,7 +160,11 @@ What is the output of this command? What information is there in the fasta file?
 
 ## Clustering
 Now that we have the fasta file with information on occurrence, abundance and samples, we need to process this to go from a fasta file to an OTU table. This is done using a process called clustering, where "similar" sequences are collapsed into one to get an OTU. For the clustering, we are going to use a tool called sumaclust - this is an arbitrary choice, you can use your favorite clustering tool. 
-The first step in getting the OTU table is to get the fasta file into a format that sumaclust likes. So let us do that `~/Work/DAMe/bin/c^CvertToUSearch.py -i begum/LerayCOI.fna`. This generates an output file called `FilteredReads.forsumaclust.fna`. Compare the two files and see what the differences are. 
+The first step in getting the OTU table is to get the fasta file into a format that sumaclust likes, which basically means we add the counts to the data. We can do this using 
+```bash
+~/Work/DAMe/bin/c^CvertToUSearch.py -i begum/LerayCOI.fna
+```
+This generates an output file called `FilteredReads.forsumaclust.fna`. Compare the two files and see what the differences are. 
 
 Now we are ready to use sumaclust to cluster the sequences. There are 2 important parameters when using sumaclust - and for that matter most clustering methods - what do you think these are?
 Similarity - how much do the sequences resemble each other and abundance - how many copies of these sequences exist. 
